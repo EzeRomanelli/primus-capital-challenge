@@ -31,7 +31,7 @@ Para apagar: `docker compose down` (preserva DB) o `docker compose down -v` (res
 ### Cómo probar el flujo principal
 
 1. **Abrí http://localhost:5173.** Ves la tabla priorizada: los clientes con score más alto arriba (urgencia × 0.6 + impacto × 0.4). Los zombis suelen estar primero.
-2. **Click en cualquier fila.** Ves el detalle del cliente: score con desglose, facturas pendientes, gestiones.
+2. **Click en cualquier fila.** Ves el detalle del cliente: score con desglose, facturas adeudadas, gestiones.
 3. **Click "+ Registrar gestión".** Elegís tipo (llamada/email/whatsapp/visita), resultado (sin_respuesta/promesa_pago/disputa/pagado/otro), notas opcionales. Submit.
 4. **La gestión queda persistida.** El segmento del cliente se recalcula en background (ej: si registrás `pagado`, un cliente zombi puede dejar de ser zombi).
 5. **Volvé al dashboard.** Recargá. El orden y el badge pueden haber cambiado.
@@ -58,7 +58,7 @@ make test           # unit + integration, ~2s
 make db-test-up     # (re)crear DB de tests
 ```
 
-3 niveles: `scoring.Calcular` (tabla de casos), `segments.Sugerir` (tabla de casos), `GET /api/clientes` contra Postgres real.
+3 niveles: `scoring.Calculate` (tabla de casos), `segments.Suggest` (tabla de casos), `GET /api/clientes` contra Postgres real.
 
 ## Documentación
 
