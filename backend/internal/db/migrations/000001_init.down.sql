@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS gestiones;
+DROP TABLE IF EXISTS facturas;
+DROP TABLE IF EXISTS clientes;
+DROP TABLE IF EXISTS segmentos;
