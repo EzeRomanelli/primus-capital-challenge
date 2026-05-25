@@ -1,0 +1,64 @@
+// Northwind Cobranza — ER diagram (schema simplificado, sin override).
+// Render: dot -Tpng docs/diagrams/data-model.dot -o docs/diagrams/data-model.png
+
+digraph northwind_cobranza {
+  rankdir=LR
+  bgcolor="#FFFFFF"
+  node [shape=plain, fontname="Helvetica"]
+  edge [fontname="Helvetica", fontsize=10, color="#475569", arrowsize=0.7]
+
+  segmentos [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#0F172A" COLSPAN="2"><FONT COLOR="white"><B>segmentos</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="nombre"><B>nombre</B> PK</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT">tolerancia_dias</TD><TD ALIGN="LEFT">int</TD></TR>
+      <TR><TD ALIGN="LEFT">descripcion</TD><TD ALIGN="LEFT">text</TD></TR>
+    </TABLE>
+  >]
+
+  clientes [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#0F172A" COLSPAN="2"><FONT COLOR="white"><B>clientes</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="id"><B>id</B> PK</TD><TD ALIGN="LEFT">uuid</TD></TR>
+      <TR><TD ALIGN="LEFT">nombre</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT">industria</TD><TD ALIGN="LEFT">text NULL</TD></TR>
+      <TR><TD ALIGN="LEFT">fecha_alta</TD><TD ALIGN="LEFT">date</TD></TR>
+      <TR><TD ALIGN="LEFT">mrr_usd</TD><TD ALIGN="LEFT">numeric(12,2)</TD></TR>
+      <TR><TD ALIGN="LEFT">payment_terms_dias</TD><TD ALIGN="LEFT">int</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="seg">segmento FK</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT">created_at / updated_at</TD><TD ALIGN="LEFT">timestamptz</TD></TR>
+    </TABLE>
+  >]
+
+  facturas [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#0F172A" COLSPAN="2"><FONT COLOR="white"><B>facturas</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>id</B> PK</TD><TD ALIGN="LEFT">uuid</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="cliente_id">cliente_id FK</TD><TD ALIGN="LEFT">uuid</TD></TR>
+      <TR><TD ALIGN="LEFT">numero</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT">fecha_emision</TD><TD ALIGN="LEFT">date</TD></TR>
+      <TR><TD ALIGN="LEFT">fecha_vencimiento</TD><TD ALIGN="LEFT">date</TD></TR>
+      <TR><TD ALIGN="LEFT">fecha_pago</TD><TD ALIGN="LEFT">date NULL</TD></TR>
+      <TR><TD ALIGN="LEFT">monto_usd</TD><TD ALIGN="LEFT">numeric(12,2)</TD></TR>
+      <TR><TD ALIGN="LEFT">estado</TD><TD ALIGN="LEFT">pendiente / pagada / vencida</TD></TR>
+      <TR><TD ALIGN="LEFT">created_at / updated_at</TD><TD ALIGN="LEFT">timestamptz</TD></TR>
+    </TABLE>
+  >]
+
+  gestiones [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#0F172A" COLSPAN="2"><FONT COLOR="white"><B>gestiones</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>id</B> PK</TD><TD ALIGN="LEFT">uuid</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="cliente_id">cliente_id FK</TD><TD ALIGN="LEFT">uuid</TD></TR>
+      <TR><TD ALIGN="LEFT">fecha</TD><TD ALIGN="LEFT">timestamptz</TD></TR>
+      <TR><TD ALIGN="LEFT">tipo</TD><TD ALIGN="LEFT">llamada / email / whatsapp / visita</TD></TR>
+      <TR><TD ALIGN="LEFT">resultado</TD><TD ALIGN="LEFT">sin_respuesta / promesa_pago / disputa / pagado / otro</TD></TR>
+      <TR><TD ALIGN="LEFT">notas</TD><TD ALIGN="LEFT">text (max 2000)</TD></TR>
+      <TR><TD ALIGN="LEFT">created_at / updated_at</TD><TD ALIGN="LEFT">timestamptz</TD></TR>
+    </TABLE>
+  >]
+
+  clientes:seg -> segmentos:nombre
+  facturas:cliente_id -> clientes:id
+  gestiones:cliente_id -> clientes:id
+}
