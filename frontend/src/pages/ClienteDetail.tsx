@@ -15,7 +15,6 @@ import type {
 } from "@/api/types"
 
 const fmtUSD = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const fmtUSDInt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 })
 const fmtFecha = new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
 const fmtFechaHora = new Intl.DateTimeFormat("es-AR", {
   day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
@@ -114,13 +113,13 @@ function Body({ detalle }: { detalle: ClienteDetalleDTO }) {
           </div>
           <div className="flex-1 space-y-2 text-sm">
             <BreakdownRow label="Urgencia" value={score.Urgencia} detail={`${score.DiasAtrasoMax}d atraso max`} />
-            <BreakdownRow label="Impacto"  value={score.Impacto}  detail={`USD ${fmtUSDInt.format(score.MontoPendienteTotal)} pendientes`} />
+            <BreakdownRow label="Impacto"  value={score.Impacto}  detail={`USD ${fmtUSD.format(score.MontoPendienteTotal)} adeudados`} />
           </div>
         </div>
       </section>
 
       <section className="space-y-3 rounded-lg border bg-white p-6">
-        <h2 className="text-base font-semibold text-slate-900">Facturas pendientes ({facsPendientes.length})</h2>
+        <h2 className="text-base font-semibold text-slate-900">Facturas adeudadas ({facsPendientes.length})</h2>
         <FacturasTable facturas={facsPendientes} />
       </section>
 
@@ -151,7 +150,7 @@ function FacturasTable({ facturas }: { facturas: Factura[] }) {
   if (facturas.length === 0) {
     return (
       <div className="rounded-md border bg-slate-50 p-6 text-center text-sm text-slate-500">
-        Sin facturas pendientes.
+        Sin facturas adeudadas.
       </div>
     )
   }
