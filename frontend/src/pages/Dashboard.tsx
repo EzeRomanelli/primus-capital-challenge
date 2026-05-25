@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useClientes } from "@/hooks/useClientes"
 import { SegmentoBadge } from "@/components/SegmentoBadge"
 import { FiltroSegmentos, type SegmentoFiltro } from "@/components/FiltroSegmentos"
+import { AyudaDialog } from "@/components/AyudaDialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -51,13 +52,16 @@ export function Dashboard() {
   return (
     <main className="min-h-screen bg-slate-50 p-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-semibold text-slate-900">Northwind — Cobranza</h1>
-          <p className="text-sm text-slate-600">
-            {isPending
-              ? "Cargando cartera…"
-              : `Tu día, priorizado por score. ${clientes.length} clientes activos.`}
-          </p>
+        <header className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold text-slate-900">Northwind — Cobranza</h1>
+            <p className="text-sm text-slate-600">
+              {isPending
+                ? "Cargando cartera…"
+                : `Tu día, priorizado por score. ${clientes.length} clientes activos.`}
+            </p>
+          </div>
+          <AyudaDialog />
         </header>
 
         {!isPending && !isError && (
