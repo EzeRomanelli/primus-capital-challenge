@@ -2,11 +2,6 @@ package domain
 
 import "time"
 
-// Cliente representa una empresa en la cartera de Northwind.
-//
-// segmento es lo calculado por el suggester (reglas explicitas) y se
-// actualiza con un recalc job cuando una gestion nueva puede cambiar
-// la clasificacion (ej: una gestion "pagado" saca al cliente de zombi).
 type Cliente struct {
 	ID               string    `json:"id"                 db:"id"`
 	Nombre           string    `json:"nombre"             db:"nombre"`

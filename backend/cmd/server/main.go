@@ -1,13 +1,5 @@
-// Command server arranca el backend HTTP de Northwind Cobranza.
-//
-// Variables de entorno requeridas:
-//   - DATABASE_URL           dsn de Postgres
-//   - SERVER_PORT            puerto HTTP (default 8080)
-//   - CORS_ALLOWED_ORIGIN    origen permitido (default http://localhost:5173)
-//
-// El .env se carga automaticamente desde el Makefile (include + export).
-// Si se ejecuta directo con `go run ./cmd/server`, exportar las variables
-// antes (o usar `make backend-run`).
+// Command server arranca el backend HTTP.
+// Env vars: DATABASE_URL (requerida), SERVER_PORT, CORS_ALLOWED_ORIGIN.
 package main
 
 import (

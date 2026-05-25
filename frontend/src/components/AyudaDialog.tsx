@@ -6,14 +6,14 @@ import { SegmentoBadge } from "@/components/SegmentoBadge"
 import { useSegmentos } from "@/hooks/useSegmentos"
 import type { Segmento } from "@/api/types"
 
-function ordenadosPorTolerancia(segs: Segmento[]) {
-  // De mas permisivo a menos: corporativo 30 -> pyme_sana 15 -> en_riesgo 5 -> zombi 0
+// De más permisivo a menos: corporativo 30 → pyme_sana 15 → en_riesgo 5 → zombi 0.
+function sortByToleranciaDesc(segs: Segmento[]) {
   return [...segs].sort((a, b) => b.tolerancia_dias - a.tolerancia_dias)
 }
 
 export function AyudaDialog() {
   const { data: segmentos } = useSegmentos()
-  const ordered = segmentos ? ordenadosPorTolerancia(segmentos) : []
+  const ordered = segmentos ? sortByToleranciaDesc(segmentos) : []
 
   return (
     <Dialog>

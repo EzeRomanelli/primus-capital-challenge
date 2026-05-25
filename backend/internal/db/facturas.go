@@ -10,8 +10,6 @@ import (
 	"github.com/ezeromanelli/northwind-cobranza/backend/internal/domain"
 )
 
-// ListFacturasByCliente devuelve todas las facturas (de cualquier estado)
-// de un cliente, mas recientes primero. La usa el endpoint de detalle.
 func ListFacturasByCliente(ctx context.Context, pool *pgxpool.Pool, clienteID string) ([]domain.Factura, error) {
 	rows, err := pool.Query(ctx, `
 		SELECT
@@ -36,15 +34,12 @@ func ListFacturasByCliente(ctx context.Context, pool *pgxpool.Pool, clienteID st
 	return pgx.CollectRows(rows, pgx.RowToStructByName[domain.Factura])
 }
 
-// FacturaPendienteRow es el subset minimo que necesita el job de recalculo
-// de segmento. Vive aca porque es especifico de esta query.
+// Subset que necesita el recalc del segmento (alimenta segments.Suggest).
 type FacturaPendienteRow struct {
 	FechaVencimiento time.Time `db:"fecha_vencimiento"`
 	MontoUSD         float64   `db:"monto_usd"`
 }
 
-// ListFacturasPendientesByCliente devuelve solo las pendientes/vencidas.
-// La usa el recalc para alimentar segments.Sugerir.
 func ListFacturasPendientesByCliente(ctx context.Context, pool *pgxpool.Pool, clienteID string) ([]FacturaPendienteRow, error) {
 	rows, err := pool.Query(ctx, `
 		SELECT

@@ -9,8 +9,6 @@ import (
 	"github.com/ezeromanelli/northwind-cobranza/backend/internal/domain"
 )
 
-// ListGestionesByCliente devuelve las gestiones de un cliente ordenadas
-// por fecha DESC (timeline en UI).
 func ListGestionesByCliente(ctx context.Context, pool *pgxpool.Pool, clienteID string) ([]domain.Gestion, error) {
 	rows, err := pool.Query(ctx, `
 		SELECT
@@ -33,12 +31,6 @@ func ListGestionesByCliente(ctx context.Context, pool *pgxpool.Pool, clienteID s
 	return pgx.CollectRows(rows, pgx.RowToStructByName[domain.Gestion])
 }
 
-// CreateGestion inserta una gestion y devuelve la fila creada
-// (con id, created_at, updated_at y fecha default si no se paso).
-//
-// Tomamos los campos minimos como argumentos sueltos en lugar de un struct,
-// porque queremos forzar al caller a pasar solo lo que el endpoint POST
-// recibe (no ID, no timestamps).
 func CreateGestion(ctx context.Context, pool *pgxpool.Pool, clienteID, tipo, resultado, notas string) (*domain.Gestion, error) {
 	rows, err := pool.Query(ctx, `
 		INSERT INTO gestiones (cliente_id, tipo, resultado, notas)

@@ -2,9 +2,7 @@ package domain
 
 import "time"
 
-// Estados de factura. Pagada implica FechaPago != nil.
-// Pendiente y Vencida son ambos "debe plata"; la diferencia es semantica
-// (pendiente = aun no vencio; vencida = paso fecha_vencimiento).
+// pendiente = aún no venció. vencida = pasó fecha_vencimiento sin pago.
 const (
 	EstadoFacturaPendiente = "pendiente"
 	EstadoFacturaPagada    = "pagada"

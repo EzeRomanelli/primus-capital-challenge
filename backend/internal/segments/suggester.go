@@ -1,12 +1,5 @@
-// Package segments sugiere el segmento de un cliente segun reglas explicitas.
-//
-// Es una funcion pura: recibe `Hoy`, no toca DB, no escribe logs. La analista
-// puede sobreescribir lo sugerido desde la UI (Flujo B del MVP); este paquete
-// se ocupa unicamente del lado del sistema.
-//
-// Las reglas viven aca y deben mantenerse sincronizadas con la spec
-// (seccion 3.2). Cualquier cambio amerita actualizar tambien la descripcion
-// de cada segmento en la migracion inicial.
+// Package segments sugiere el segmento de un cliente según reglas explícitas.
+// Función pura, testeable con tabla de casos.
 package segments
 
 import (
@@ -15,8 +8,6 @@ import (
 	"github.com/ezeromanelli/northwind-cobranza/backend/internal/domain"
 )
 
-// FacturaInput es el subset que necesita el suggester. Por ahora solo la fecha
-// de vencimiento; si en el futuro las reglas miran el monto, se agrega aca.
 type FacturaInput struct {
 	FechaVencimiento time.Time
 }
@@ -28,7 +19,6 @@ type Input struct {
 	FacturasPendientes []FacturaInput
 }
 
-// Umbrales. Centralizados aca para que cambiarlos sea una sola edicion.
 const (
 	mrrCorporativoUmbral     = 2500.0
 	corporativoTermsMin      = 60
@@ -36,12 +26,9 @@ const (
 	enRiesgoUmbralDiasAtraso = 15
 )
 
-// Suggest aplica las reglas en orden de prioridad y devuelve uno de los 4
-// segmentos canonicos definidos en domain.
-//
-// Orden importante: zombi > corporativo > en_riesgo > pyme_sana.
-// Un cliente con MRR alto pero que dejo de pagar hace 100 dias sigue siendo
-// zombi, no corporativo: el dolor inmediato pesa mas que el perfil contractual.
+// Suggest aplica las reglas en orden: zombi > corporativo > en_riesgo > pyme_sana.
+// Zombi gana sobre corporativo: un cliente con MRR alto pero atraso severo se
+// trata como zombi (el dolor inmediato pesa más que el perfil contractual).
 func Suggest(in Input) string {
 	atrasoMaxDias := 0
 	for _, f := range in.FacturasPendientes {

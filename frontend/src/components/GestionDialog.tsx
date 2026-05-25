@@ -38,13 +38,13 @@ export function GestionDialog({
   const mutation = useCreateGestion(clienteId)
 
   useEffect(() => {
-    if (open) {
-      setTipo("llamada")
-      setResultado("sin_respuesta")
-      setNotas("")
-      mutation.reset()
-    }
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (!open) return
+    setTipo("llamada")
+    setResultado("sin_respuesta")
+    setNotas("")
+    mutation.reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   const notasOver = notas.length > NOTAS_MAX
 

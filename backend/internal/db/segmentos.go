@@ -9,9 +9,7 @@ import (
 	"github.com/ezeromanelli/northwind-cobranza/backend/internal/domain"
 )
 
-// ListSegmentos devuelve las 4 filas de la tabla de configuracion.
-// Ordenadas por tolerancia ASC para que el frontend las muestre del
-// mas critico (zombi=0) al mas relajado (corporativo=30).
+// Ordenados por tolerancia ASC: del más crítico (zombi=0) al más relajado.
 func ListSegmentos(ctx context.Context, pool *pgxpool.Pool) ([]domain.Segmento, error) {
 	rows, err := pool.Query(ctx, `
 		SELECT nombre, tolerancia_dias, descripcion

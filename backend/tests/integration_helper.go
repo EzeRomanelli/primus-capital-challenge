@@ -1,15 +1,5 @@
-// Package tests provee helpers para los tests de integracion que necesitan
-// una conexion real a Postgres.
-//
-// Los tests usan la DB apuntada por TEST_DATABASE_URL (default
-// postgres://.../northwind_test). Setup:
-//
-//	make db-test-up      # crea la DB de tests y aplica migraciones
-//	make test            # corre todo (unit + integration)
-//
-// Si la DB no es accesible, los tests de integracion se SKIPean
-// (no FAIL), asi `go test ./...` sigue corriendo en entornos donde
-// Postgres no esta levantado (por ejemplo en CI sin servicio de DB).
+// Package tests provee helpers para integration tests contra Postgres real.
+// Si TEST_DATABASE_URL no está disponible, los tests hacen t.Skip (no FAIL).
 package tests
 
 import (
@@ -21,8 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// MustTestPool abre un pool contra TEST_DATABASE_URL. Si la variable
-// no esta seteada o el ping falla, hace t.Skip (no FAIL).
 func MustTestPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("TEST_DATABASE_URL")
@@ -41,8 +29,7 @@ func MustTestPool(t *testing.T) *pgxpool.Pool {
 	return pool
 }
 
-// TruncateAll limpia las tablas de datos pero mantiene segmentos
-// (que son fixtures cargadas en la migracion).
+// Mantiene la tabla segmentos (fixture de la migración).
 func TruncateAll(t *testing.T, pool *pgxpool.Pool) {
 	t.Helper()
 	if _, err := pool.Exec(context.Background(), "TRUNCATE gestiones, facturas, clientes CASCADE"); err != nil {
@@ -50,11 +37,8 @@ func TruncateAll(t *testing.T, pool *pgxpool.Pool) {
 	}
 }
 
-// SeedDosClientes inserta dos clientes contrastantes:
-//   - "Saludable PyME" sin facturas pendientes (score esperado bajo)
-//   - "Zombi Test" con factura vencida hace 100 dias (score esperado alto)
-//
-// Devuelve sus IDs en ese orden.
+// Inserta dos clientes contrastantes: PyME sana sin facturas pendientes,
+// zombi con factura vencida hace 100 días.
 func SeedDosClientes(t *testing.T, pool *pgxpool.Pool) (saludableID, zombiID string) {
 	t.Helper()
 	ctx := context.Background()

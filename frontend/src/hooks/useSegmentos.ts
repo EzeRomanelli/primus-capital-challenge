@@ -5,6 +5,6 @@ export function useSegmentos() {
   return useQuery({
     queryKey: ["segmentos"],
     queryFn: fetchSegmentos,
-    staleTime: 10 * 60 * 1000, // 10 min: config rara vez cambia
+    staleTime: 10 * 60 * 1000,
   })
 }

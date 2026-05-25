@@ -8,17 +8,13 @@ import (
 //go:embed openapi.yaml
 var openapiYAML []byte
 
-// openapiYAMLHandler sirve el spec OpenAPI 3.0 (machine-readable) en YAML.
-// Lo embebemos al binario para que viaje con el deployable.
 func openapiYAMLHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/yaml; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-cache")
 	_, _ = w.Write(openapiYAML)
 }
 
-// swaggerHTML es la UI interactiva. Carga swagger-ui-dist desde unpkg
-// (CDN publico). Para un evaluador offline esto rompe; aceptable porque
-// el environment es local con internet.
+// Carga swagger-ui-dist desde CDN. Requiere internet en la máquina local.
 const swaggerHTML = `<!doctype html>
 <html lang="en">
 <head>

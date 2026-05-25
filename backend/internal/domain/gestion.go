@@ -2,7 +2,6 @@ package domain
 
 import "time"
 
-// Tipos de gestion: canal usado para contactar al cliente.
 const (
 	TipoGestionLlamada  = "llamada"
 	TipoGestionEmail    = "email"
@@ -10,7 +9,6 @@ const (
 	TipoGestionVisita   = "visita"
 )
 
-// Resultados posibles de una gestion. La analista los elige al registrar.
 const (
 	ResultadoSinRespuesta = "sin_respuesta"
 	ResultadoPromesaPago  = "promesa_pago"
@@ -19,7 +17,6 @@ const (
 	ResultadoOtro         = "otro"
 )
 
-// Sets para validacion en handlers (lookup O(1)).
 var TiposGestionValidos = map[string]bool{
 	TipoGestionLlamada:  true,
 	TipoGestionEmail:    true,

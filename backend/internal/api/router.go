@@ -1,8 +1,4 @@
-// Package api expone el HTTP router (chi) y los handlers de los 5 endpoints.
-//
-// Cada handler hace su validacion manual; no usamos go-playground/validator
-// porque tenemos solo 2 endpoints de mutacion y la validacion explicita es
-// mas leible que un setup de tags.
+// Package api expone el HTTP router y los handlers.
 package api
 
 import (
@@ -14,15 +10,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Router agrupa dependencias compartidas por los handlers para no
-// pasarlas como argumentos de cada funcion.
 type Router struct {
 	pool              *pgxpool.Pool
 	corsAllowedOrigin string
 }
 
-// NewRouter arma el router con middleware comun y las rutas de la API.
-// El http.Handler resultante se monta directamente en http.Server.
 func NewRouter(pool *pgxpool.Pool, corsAllowedOrigin string) http.Handler {
 	rt := &Router{
 		pool:              pool,
@@ -37,8 +29,6 @@ func NewRouter(pool *pgxpool.Pool, corsAllowedOrigin string) http.Handler {
 
 	r.Get("/health", healthHandler)
 
-	// Swagger UI + spec OpenAPI. Single source of truth: openapi.yaml
-	// embebido al binario (ver swagger.go).
 	r.Get("/swagger", http.RedirectHandler("/swagger/", http.StatusMovedPermanently).ServeHTTP)
 	r.Get("/swagger/", swaggerUIHandler)
 	r.Get("/openapi.yaml", openapiYAMLHandler)
@@ -53,8 +43,6 @@ func NewRouter(pool *pgxpool.Pool, corsAllowedOrigin string) http.Handler {
 	return r
 }
 
-// corsMiddleware permite el origen del frontend en desarrollo.
-// Simple, sin dependencia externa para una sola politica.
 func corsMiddleware(allowedOrigin string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -70,9 +58,6 @@ func corsMiddleware(allowedOrigin string) func(http.Handler) http.Handler {
 	}
 }
 
-// uuidPattern valida formato UUID v4-ish (8-4-4-4-12 hex con guiones).
-// No validamos la version porque Postgres lo hace. Solo evitamos enviar
-// strings basura a la DB y obtener errores cripticos.
 var uuidPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
 func isValidUUID(s string) bool {

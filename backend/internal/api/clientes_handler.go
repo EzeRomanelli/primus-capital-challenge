@@ -16,12 +16,9 @@ import (
 	"github.com/ezeromanelli/northwind-cobranza/backend/internal/scoring"
 )
 
-// ticketMaxUSDForScoring es la referencia del MVP para normalizar impacto.
-// Sale del enunciado: tickets de USD 200 a USD 15.000.
+// Referencia del enunciado: tickets de USD 200 a USD 15.000.
 const ticketMaxUSDForScoring = 15000.0
 
-// ClientePriorizadoDTO es la fila que devuelve GET /api/clientes.
-// Incluye los datos del cliente + agregados + el score y su desglose.
 type ClientePriorizadoDTO struct {
 	ID                  string     `json:"id"`
 	Nombre              string     `json:"nombre"`
@@ -37,8 +34,6 @@ type ClientePriorizadoDTO struct {
 	Impacto             int        `json:"impacto"`
 }
 
-// ClienteDetalleDTO es lo que devuelve GET /api/clientes/{id}: cliente
-// completo + score con desglose + facturas + gestiones.
 type ClienteDetalleDTO struct {
 	Cliente   domain.Cliente    `json:"cliente"`
 	Score     scoring.Resultado `json:"score"`
@@ -56,9 +51,9 @@ func (rt *Router) listClientesHandler(w http.ResponseWriter, r *http.Request) {
 	hoy := time.Now().UTC()
 	out := make([]ClientePriorizadoDTO, 0, len(resumenes))
 	for _, c := range resumenes {
-		// Truco: una "factura virtual" con monto=total y fechaVenc=min(venc)
-		// produce el MISMO score que iterar todas (urgencia usa max atraso,
-		// impacto usa sum monto). Asi evitamos otra query por cliente.
+		// Truco: una factura virtual (monto=total, venc=min(venc)) produce el
+		// mismo score que iterar todas (urgencia usa max atraso, impacto usa
+		// sum monto). Evita una query extra por cliente.
 		var facs []scoring.FacturaInput
 		if c.FechaVencMin != nil && c.MontoPendienteTotal > 0 {
 			facs = []scoring.FacturaInput{{
@@ -120,7 +115,6 @@ func (rt *Router) getClienteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Resolver tolerancia del segmento del cliente para el scoring.
 	segs, err := db.ListSegmentos(r.Context(), rt.pool)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "db_error", "error obteniendo segmentos")
@@ -157,7 +151,6 @@ func (rt *Router) getClienteHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// CrearGestionReq es el body del POST /api/clientes/{id}/gestiones.
 type CrearGestionReq struct {
 	Tipo      string `json:"tipo"`
 	Resultado string `json:"resultado"`
@@ -195,8 +188,7 @@ func (rt *Router) crearGestionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fire-and-forget: el segmento puede cambiar por esta gestion
-	// (ej: si el resultado es "pagado", el cliente puede dejar de ser zombi).
+	// Una gestión "pagado" puede sacar al cliente de zombi; recalc en background.
 	go recalc.RecalculateSegment(rt.pool, clienteID)
 
 	writeJSON(w, http.StatusCreated, created)

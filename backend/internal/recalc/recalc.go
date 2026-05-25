@@ -1,10 +1,7 @@
-// Package recalc recalcula el segmento de un cliente cuando hay cambios en
-// sus facturas o gestiones. Lo invocan los handlers en goroutine fire-and-forget
-// despues de crear/modificar.
-//
-// El job tiene su propio context (no usa el del request) porque corre
-// despues de que el handler ya respondio al cliente HTTP. Si fallara, no
-// hay nadie a quien devolverle el error - lo logueamos y seguimos.
+// Package recalc actualiza el segmento de un cliente tras cambios en facturas
+// o gestiones. Se dispara fire-and-forget desde los handlers, con context propio
+// (el del request ya terminó). Si falla, se loguea y la próxima gestión lo
+// vuelve a disparar.
 package recalc
 
 import (
@@ -18,10 +15,6 @@ import (
 	"github.com/ezeromanelli/northwind-cobranza/backend/internal/segments"
 )
 
-// RecalculateSegment aplica las reglas del suggester y persiste el cambio
-// si difiere del segmento actual.
-//
-// Idempotente: si falla, la proxima gestion lo va a re-disparar.
 func RecalculateSegment(pool *pgxpool.Pool, clienteID string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -51,7 +44,7 @@ func RecalculateSegment(pool *pgxpool.Pool, clienteID string) {
 
 	nuevo := segments.Suggest(in)
 	if nuevo == cliente.Segmento {
-		return // sin cambio: no escribir
+		return
 	}
 	if err := db.UpdateSegmento(ctx, pool, clienteID, nuevo); err != nil {
 		log.Printf("recalc: UpdateSegmento(%s, %s): %v", clienteID, nuevo, err)

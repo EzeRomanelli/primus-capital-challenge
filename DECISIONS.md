@@ -94,6 +94,10 @@ Las decisiones más relevantes que tomé y por qué. Decisor único: yo.
 
 Yo guié las decisiones de **arquitectura y negocio** (alcance del MVP, alma del producto, recortes, supuestos, score 2 factores, stack mínimo, convención de nombres). Claude implementó **el código** (queries SQL, structs Go, componentes React, tests table-driven, Dockerfiles, nginx config). Ver `AI_LOG.md` para detalle de los prompts más relevantes.
 
+## Proceso: diseño visual antes de codear
+
+Antes de tocar el frontend, diseñé las pantallas en **Pencil** ([designs.pen](designs.pen) versionado en este repo). El mockup fija el layout y los componentes esperados, así la implementación es traducción visual, no exploración. Decisión deliberada: el código de UI es más barato de iterar cuando ya sabés a qué llegar.
+
 ---
 
 ## Iteración 2+ (si tuviera 2 semanas más)

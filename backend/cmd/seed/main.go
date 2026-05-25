@@ -1,14 +1,6 @@
-// Command seed carga datos sinteticos en la DB con seed fijo (determinista).
-//
-// Estrategia:
-//  1) TRUNCATE de gestiones, facturas, clientes
-//  2) 420 clientes random con distribucion realista del segmento:
-//     70% pyme_sana | 15% corporativo | 10% en_riesgo | 5% zombi
-//  3) Cada cliente recibe 12 meses de facturas con patron de pago acorde
-//     a su segmento.
-//  4) ~30% de clientes reciben una gestion en los ultimos 30 dias.
-//
-// Reproducibilidad: rand.New(rand.NewSource(42)) en todos los choices random.
+// Command seed carga datos sintéticos en la DB con semilla fija (determinista).
+// 420 clientes con distribución 70/15/10/5 (pyme_sana/corporativo/en_riesgo/zombi)
+// + 12 meses de facturas por cliente con patrón de pago acorde + ~30% con gestión reciente.
 package main
 
 import (
@@ -31,12 +23,10 @@ const (
 	mesesHistorico = 12
 )
 
-// Distribucion target de segmentos.
 const (
 	pctZombi       = 0.05
 	pctEnRiesgo    = 0.10
 	pctCorporativo = 0.15
-	// resto -> pyme_sana
 )
 
 func main() {
@@ -159,8 +149,7 @@ func insertarCliente(ctx context.Context, pool *pgxpool.Pool, c clienteRandom) s
 	return id
 }
 
-// insertarFacturasHistoricas genera 12 meses de facturas mensuales con
-// patron de pago acorde al segmento. pgx.Batch para 1 round trip por cliente.
+// pgx.Batch: 1 round trip por cliente para los 12 meses de facturas.
 func insertarFacturasHistoricas(ctx context.Context, pool *pgxpool.Pool, rnd *rand.Rand, clienteID string, c clienteRandom, hoy time.Time) {
 	batch := &pgx.Batch{}
 	for i := mesesHistorico; i >= 1; i-- {
@@ -179,7 +168,7 @@ func insertarFacturasHistoricas(ctx context.Context, pool *pgxpool.Pool, rnd *ra
 	}
 }
 
-// decidirEstadoFactura: i=1 es la mas reciente, i=12 la mas vieja.
+// i=1 es la factura más reciente, i=12 la más vieja.
 func decidirEstadoFactura(rnd *rand.Rand, segmento string, i int, venc time.Time) (estado string, fechaPago *time.Time) {
 	switch segmento {
 	case domain.SegmentoZombi:

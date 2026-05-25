@@ -10,9 +10,8 @@ import (
 	"github.com/ezeromanelli/northwind-cobranza/backend/internal/domain"
 )
 
-// ClienteResumen es la vista plana usada por el listado priorizado.
-// Une cliente + tolerancia del segmento + agregados de facturas pendientes
-// y ultima gestion. Vive en db (no en domain) porque es especifico de esta query.
+// Vista plana del listado priorizado: cliente + tolerancia del segmento +
+// agregados de facturas pendientes y última gestión.
 type ClienteResumen struct {
 	ID                  string     `db:"id"`
 	Nombre              string     `db:"nombre"`
@@ -26,12 +25,7 @@ type ClienteResumen struct {
 	UltimaGestionFecha  *time.Time `db:"ultima_gestion_fecha"`
 }
 
-// ListClientesResumen trae todos los clientes con los agregados necesarios
-// para calcular el score en memoria.
-//
-// Decision: NO calculamos el score en SQL. El cliente se rankea en Go
-// porque la formula es chica, testeable como funcion pura, y mas facil
-// de iterar sin tocar SQL.
+// El score no se calcula en SQL: el ranking lo hace Go (función pura, testeable).
 func ListClientesResumen(ctx context.Context, pool *pgxpool.Pool) ([]ClienteResumen, error) {
 	rows, err := pool.Query(ctx, `
 		SELECT
@@ -68,7 +62,6 @@ func ListClientesResumen(ctx context.Context, pool *pgxpool.Pool) ([]ClienteResu
 	return pgx.CollectRows(rows, pgx.RowToStructByName[ClienteResumen])
 }
 
-// GetClienteByID devuelve un cliente completo o pgx.ErrNoRows si no existe.
 func GetClienteByID(ctx context.Context, pool *pgxpool.Pool, id string) (*domain.Cliente, error) {
 	rows, err := pool.Query(ctx, `
 		SELECT
@@ -94,9 +87,6 @@ func GetClienteByID(ctx context.Context, pool *pgxpool.Pool, id string) (*domain
 	return &c, nil
 }
 
-// UpdateSegmento cambia el segmento de un cliente. Lo usa el job de recalc
-// dispatched al crear una gestion nueva (ej: "pagado" puede sacar al cliente
-// de zombi).
 func UpdateSegmento(ctx context.Context, pool *pgxpool.Pool, id, segmento string) error {
 	_, err := pool.Exec(ctx, `
 		UPDATE clientes
