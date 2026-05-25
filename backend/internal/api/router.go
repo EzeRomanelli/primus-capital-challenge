@@ -37,6 +37,12 @@ func NewRouter(pool *pgxpool.Pool, corsAllowedOrigin string) http.Handler {
 
 	r.Get("/health", healthHandler)
 
+	// Swagger UI + spec OpenAPI. Single source of truth: openapi.yaml
+	// embebido al binario (ver swagger.go).
+	r.Get("/swagger", http.RedirectHandler("/swagger/", http.StatusMovedPermanently).ServeHTTP)
+	r.Get("/swagger/", swaggerUIHandler)
+	r.Get("/openapi.yaml", openapiYAMLHandler)
+
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/segmentos", rt.listSegmentosHandler)
 		r.Get("/clientes", rt.listClientesHandler)

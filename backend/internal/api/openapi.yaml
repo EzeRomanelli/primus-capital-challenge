@@ -1,0 +1,262 @@
+openapi: 3.0.3
+info:
+  title: Northwind Cobranza API
+  version: 1.0.0
+  description: |
+    MVP de priorización de cartera + gestión mínima para el equipo de cobranza
+    de Northwind. Backend Go + Postgres. Ver `DECISIONS.md` y `docs/API.md`
+    en el repo para contexto.
+
+servers:
+  - url: http://localhost:8080
+    description: Local (docker compose up)
+
+tags:
+  - name: meta
+    description: Healthcheck
+  - name: catalog
+    description: Datos de configuración
+  - name: cobranza
+    description: Listado priorizado, detalle, registro de gestiones
+
+paths:
+  /health:
+    get:
+      tags: [meta]
+      summary: Healthcheck del proceso
+      description: No checkea Postgres a propósito; los handlers de negocio devuelven 500 con detalle si la DB se cae.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+
+  /api/segmentos:
+    get:
+      tags: [catalog]
+      summary: Lista los 4 segmentos canónicos
+      description: Datos de configuración. Cambian raramente; el frontend cachea 10 min.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Segmento" }
+
+  /api/clientes:
+    get:
+      tags: [cobranza]
+      summary: Listado priorizado por score DESC
+      description: Calcula el score on-the-fly (urgencia × 0.6 + impacto × 0.4) y devuelve ordenado de mayor a menor. Fuente del Dashboard.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ClientePriorizadoDTO" }
+        "500":
+          description: Error de base de datos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /api/clientes/{id}:
+    get:
+      tags: [cobranza]
+      summary: Detalle del cliente
+      description: Cliente + score con desglose + facturas + gestiones.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+          example: 33333333-3333-3333-3333-333333333333
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClienteDetalleDTO" }
+        "400":
+          description: UUID inválido
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "404":
+          description: Cliente no encontrado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /api/clientes/{id}/gestiones:
+    post:
+      tags: [cobranza]
+      summary: Registrar gestión (única mutación del MVP)
+      description: |
+        Side effect fire-and-forget: el segmento del cliente puede recalcularse
+        después del response. Si registrás `pagado` en un zombi, puede dejar
+        de ser zombi en el próximo fetch.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrearGestionReq" }
+      responses:
+        "201":
+          description: Gestión creada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Gestion" }
+        "400":
+          description: UUID o body mal formado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: "Validación: tipo/resultado fuera de los enums, o notas > 2000 chars"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+components:
+  schemas:
+    SegmentoNombre:
+      type: string
+      enum: [corporativo, pyme_sana, en_riesgo, zombi]
+
+    TipoGestion:
+      type: string
+      enum: [llamada, email, whatsapp, visita]
+
+    ResultadoGestion:
+      type: string
+      enum: [sin_respuesta, promesa_pago, disputa, pagado, otro]
+
+    EstadoFactura:
+      type: string
+      enum: [pendiente, pagada, vencida]
+
+    Segmento:
+      type: object
+      required: [nombre, tolerancia_dias, descripcion]
+      properties:
+        nombre: { $ref: "#/components/schemas/SegmentoNombre" }
+        tolerancia_dias: { type: integer, minimum: 0, example: 30 }
+        descripcion: { type: string }
+
+    Cliente:
+      type: object
+      required: [id, nombre, fecha_alta, mrr_usd, payment_terms_dias, segmento, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        nombre: { type: string }
+        industria: { type: string, nullable: true }
+        fecha_alta: { type: string, format: date-time }
+        mrr_usd: { type: number, format: double }
+        payment_terms_dias: { type: integer }
+        segmento: { $ref: "#/components/schemas/SegmentoNombre" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Factura:
+      type: object
+      required: [id, cliente_id, numero, fecha_emision, fecha_vencimiento, monto_usd, estado, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        cliente_id: { type: string, format: uuid }
+        numero: { type: string }
+        fecha_emision: { type: string, format: date }
+        fecha_vencimiento: { type: string, format: date }
+        fecha_pago: { type: string, format: date, nullable: true }
+        monto_usd: { type: number, format: double }
+        estado: { $ref: "#/components/schemas/EstadoFactura" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Gestion:
+      type: object
+      required: [id, cliente_id, fecha, tipo, resultado, notas, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        cliente_id: { type: string, format: uuid }
+        fecha: { type: string, format: date-time }
+        tipo: { $ref: "#/components/schemas/TipoGestion" }
+        resultado: { $ref: "#/components/schemas/ResultadoGestion" }
+        notas: { type: string, maxLength: 2000 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    ClientePriorizadoDTO:
+      type: object
+      required: [id, nombre, segmento, mrr_usd, payment_terms_dias, monto_pendiente_total, dias_atraso_max, score, urgencia, impacto]
+      properties:
+        id: { type: string, format: uuid }
+        nombre: { type: string }
+        industria: { type: string, nullable: true }
+        segmento: { $ref: "#/components/schemas/SegmentoNombre" }
+        mrr_usd: { type: number, format: double }
+        payment_terms_dias: { type: integer }
+        monto_pendiente_total: { type: number, format: double }
+        dias_atraso_max: { type: integer }
+        ultima_gestion_fecha: { type: string, format: date-time, nullable: true }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        urgencia: { type: integer, minimum: 0, maximum: 100 }
+        impacto: { type: integer, minimum: 0, maximum: 100 }
+
+    ScoreResultado:
+      type: object
+      description: |
+        PascalCase intencional. El struct `scoring.Resultado` en Go no tiene
+        json tags, así que el encoder serializa el nombre exacto del campo
+        exportado.
+      required: [Score, Urgencia, Impacto, DiasAtrasoMax, MontoPendienteTotal]
+      properties:
+        Score: { type: integer }
+        Urgencia: { type: integer }
+        Impacto: { type: integer }
+        DiasAtrasoMax: { type: integer }
+        MontoPendienteTotal: { type: number, format: double }
+
+    ClienteDetalleDTO:
+      type: object
+      required: [cliente, score, facturas, gestiones]
+      properties:
+        cliente: { $ref: "#/components/schemas/Cliente" }
+        score: { $ref: "#/components/schemas/ScoreResultado" }
+        facturas:
+          type: array
+          items: { $ref: "#/components/schemas/Factura" }
+        gestiones:
+          type: array
+          items: { $ref: "#/components/schemas/Gestion" }
+
+    CrearGestionReq:
+      type: object
+      required: [tipo, resultado]
+      properties:
+        tipo: { $ref: "#/components/schemas/TipoGestion" }
+        resultado: { $ref: "#/components/schemas/ResultadoGestion" }
+        notas:
+          type: string
+          maxLength: 2000
+          description: Puede ser cadena vacía.
+
+    ErrorResponse:
+      type: object
+      required: [error, code]
+      properties:
+        error: { type: string, description: Mensaje humano }
+        code:  { type: string, description: "Código estable (machine-friendly), ej: invalid_segmento, not_found, db_error" }

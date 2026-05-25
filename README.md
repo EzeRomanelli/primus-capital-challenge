@@ -65,4 +65,5 @@ make db-test-up     # (re)crear DB de tests
 - [`DECISIONS.md`](DECISIONS.md) — las decisiones más importantes que tomé y por qué.
 - [`AI_LOG.md`](AI_LOG.md) — cómo usé Claude Code.
 - [`docs/API.md`](docs/API.md) — contrato HTTP de los 5 endpoints.
+- **Swagger UI:** http://localhost:8080/swagger/ (cuando el backend está corriendo). Spec en YAML: http://localhost:8080/openapi.yaml.
 - [`docs/diagrams/data-model.png`](docs/diagrams/data-model.png) — diagrama ER del schema.

@@ -2,6 +2,12 @@
 
 Contrato HTTP. Base URL en local: `http://localhost:8080`.
 
+> **Tip:** este mismo contrato está disponible como spec **OpenAPI 3.0** embebido en el binario:
+> - **Swagger UI interactiva:** http://localhost:8080/swagger/ (probar endpoints desde el browser)
+> - **Spec YAML:** http://localhost:8080/openapi.yaml (machine-readable, importable a Postman/Insomnia)
+>
+> Fuente del spec: `backend/internal/api/openapi.yaml` (single source of truth, embebido vía `//go:embed`).
+
 ## Convenciones
 
 - **Format:** JSON. Errores 4xx/5xx devuelven `{"error": string, "code": string}`.
