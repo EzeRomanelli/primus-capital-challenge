@@ -1,11 +1,14 @@
+import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useClientes } from "@/hooks/useClientes"
 import { SegmentoBadge } from "@/components/SegmentoBadge"
+import { FiltroSegmentos, type SegmentoFiltro } from "@/components/FiltroSegmentos"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
+import type { ClientePriorizadoDTO, SegmentoNombre } from "@/api/types"
 
 const fmtUSD = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtFecha = new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "2-digit" })
@@ -21,10 +24,29 @@ function formatGestion(iso?: string) {
   return fmtFecha.format(new Date(iso))
 }
 
+function buildCounts(cs: ClientePriorizadoDTO[]): Record<SegmentoFiltro, number> {
+  const acc: Record<SegmentoFiltro, number> = {
+    todos: cs.length,
+    corporativo: 0,
+    pyme_sana: 0,
+    en_riesgo: 0,
+    zombi: 0,
+  }
+  for (const c of cs) acc[c.segmento as SegmentoNombre]++
+  return acc
+}
+
 export function Dashboard() {
   const navigate = useNavigate()
   const { data, isPending, isError } = useClientes()
   const clientes = data ?? []
+
+  const [seleccionado, setSeleccionado] = useState<SegmentoFiltro>("todos")
+  const counts = useMemo(() => buildCounts(clientes), [clientes])
+  const filtrados = useMemo(
+    () => (seleccionado === "todos" ? clientes : clientes.filter((c) => c.segmento === seleccionado)),
+    [clientes, seleccionado],
+  )
 
   return (
     <main className="min-h-screen bg-slate-50 p-8">
@@ -37,6 +59,10 @@ export function Dashboard() {
               : `Tu día, priorizado por score. ${clientes.length} clientes activos.`}
           </p>
         </header>
+
+        {!isPending && !isError && (
+          <FiltroSegmentos seleccionado={seleccionado} onSelect={setSeleccionado} counts={counts} />
+        )}
 
         {isPending && (
           <div className="space-y-2 rounded-md border bg-white p-4">
@@ -66,7 +92,12 @@ export function Dashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {clientes.map((c) => (
+                  {filtrados.length === 0 && (
+                    <TableRow><TableCell colSpan={6} className="py-12 text-center text-sm text-slate-500">
+                      No hay clientes en este segmento.
+                    </TableCell></TableRow>
+                  )}
+                  {filtrados.map((c) => (
                     <TableRow
                       key={c.id}
                       className="cursor-pointer"
@@ -96,8 +127,9 @@ export function Dashboard() {
                 </TableBody>
               </Table>
             </div>
-            <footer className="text-xs text-slate-400 font-mono">
-              score = urgencia × 0.6 + impacto × 0.4
+            <footer className="flex items-center justify-between text-xs text-slate-400">
+              <span>Mostrando {filtrados.length} de {clientes.length}.</span>
+              <span className="font-mono">score = urgencia × 0.6 + impacto × 0.4</span>
             </footer>
           </>
         )}
