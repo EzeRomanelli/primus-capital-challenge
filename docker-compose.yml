@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: northwind-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-northwind}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-northwind}
+      POSTGRES_DB: ${POSTGRES_DB:-northwind}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-northwind}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Init container: aplica migraciones y termina.
+  migrate:
+    image: migrate/migrate:v4.18.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/internal/db/migrations:/migrations:ro
+    command: >-
+      -path=/migrations
+      -database=postgres://${POSTGRES_USER:-northwind}:${POSTGRES_PASSWORD:-northwind}@postgres:5432/${POSTGRES_DB:-northwind}?sslmode=disable
+      up
+    restart: on-failure
+
+  # Init container: seed determinista (seed=42). Corre una vez y termina.
+  seed:
+    build:
+      context: ./backend
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-northwind}:${POSTGRES_PASSWORD:-northwind}@postgres:5432/${POSTGRES_DB:-northwind}?sslmode=disable
+    command: ["/app/seed"]
+    restart: on-failure
+
+  backend:
+    build:
+      context: ./backend
+    container_name: northwind-backend
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-northwind}:${POSTGRES_PASSWORD:-northwind}@postgres:5432/${POSTGRES_DB:-northwind}?sslmode=disable
+      SERVER_PORT: 8080
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:5173}
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: northwind-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

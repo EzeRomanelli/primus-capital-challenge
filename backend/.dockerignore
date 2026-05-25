@@ -1,0 +1,8 @@
+tmp/
+bin/
+*.test
+coverage.*
+.git
+.idea
+.vscode
+*.md
