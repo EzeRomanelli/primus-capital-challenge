@@ -29,7 +29,7 @@
 
 ## Dónde corregí a Claude
 
-1. **Plan de 4426 líneas → 250.** Cuando le pedí el plan inicial se fue al carajo siguiendo su skill de planning. Hice cumplir el principio de simplicidad, lo redujo a 250 líneas.
+1. **Plan de 4426 líneas → 250.** Cuando le pedí el plan inicial sobre-detalló siguiendo su skill de planning sin filtrar contra el alcance. Hice cumplir el principio de simplicidad, lo redujo a 250 líneas.
 2. **Score 4 factores → 2.** Filtré contra el alcance.
 3. **sqlc → pgx + SQL plano.** Filtré contra el alcance.
 4. **Tolerancia Corporativo 75 → 30.** Claude auto-detectó la inconsistencia entre `tolerancia_dias` (operacional, por segmento) y `payment_terms_dias` (contractual, por cliente) en una auto-revisión. Yo acepté la corrección tras entender la diferencia.
