@@ -20,7 +20,7 @@ func parseDate(s string) time.Time {
 //   3) zombi clasico al tope del scoring
 //   4) capeo de impacto cuando el monto excede el ticket maximo
 //   5) multiples facturas: urgencia toma el max(atraso), impacto suma montos
-func TestCalcular(t *testing.T) {
+func TestCalculate(t *testing.T) {
 	hoy := parseDate("2026-05-23")
 	const ticketMax = 15000.0
 
@@ -108,7 +108,7 @@ func TestCalcular(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Calcular(tt.input)
+			got := Calculate(tt.input)
 			if got.Score != tt.wantScore {
 				t.Errorf("Score: got %d, want %d", got.Score, tt.wantScore)
 			}

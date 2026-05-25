@@ -9,6 +9,6 @@ export function fetchClienteDetalle(id: string): Promise<ClienteDetalleDTO> {
   return apiFetch<ClienteDetalleDTO>(`/api/clientes/${id}`)
 }
 
-export function crearGestion(id: string, body: CrearGestionReq): Promise<Gestion> {
+export function createGestion(id: string, body: CrearGestionReq): Promise<Gestion> {
   return apiFetch<Gestion>(`/api/clientes/${id}/gestiones`, { method: "POST", body })
 }

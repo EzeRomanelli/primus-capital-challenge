@@ -66,7 +66,7 @@ func (rt *Router) listClientesHandler(w http.ResponseWriter, r *http.Request) {
 				MontoUSD:         c.MontoPendienteTotal,
 			}}
 		}
-		res := scoring.Calcular(scoring.Input{
+		res := scoring.Calculate(scoring.Input{
 			Hoy:                hoy,
 			ToleranciaDias:     c.ToleranciaDias,
 			TicketMaxUSD:       ticketMaxUSDForScoring,
@@ -147,7 +147,7 @@ func (rt *Router) getClienteHandler(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 	}
-	res := scoring.Calcular(scoringIn)
+	res := scoring.Calculate(scoringIn)
 
 	writeJSON(w, http.StatusOK, ClienteDetalleDTO{
 		Cliente:   *cliente,
@@ -197,7 +197,7 @@ func (rt *Router) crearGestionHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Fire-and-forget: el segmento puede cambiar por esta gestion
 	// (ej: si el resultado es "pagado", el cliente puede dejar de ser zombi).
-	go recalc.RecalcularSegmento(rt.pool, clienteID)
+	go recalc.RecalculateSegment(rt.pool, clienteID)
 
 	writeJSON(w, http.StatusCreated, created)
 }

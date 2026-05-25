@@ -46,7 +46,7 @@ function scoreColor(score: number) {
 
 function date(iso?: string) { return iso ? fmtFecha.format(new Date(iso)) : "—" }
 
-function pendientes(facturas: Factura[]) {
+function filterAdeudadas(facturas: Factura[]) {
   return facturas.filter((f) => f.estado === "pendiente" || f.estado === "vencida")
 }
 
@@ -83,7 +83,7 @@ export function ClienteDetail() {
 
 function Body({ detalle }: { detalle: ClienteDetalleDTO }) {
   const { cliente, score, facturas, gestiones } = detalle
-  const facsPendientes = pendientes(facturas)
+  const facsAdeudadas = filterAdeudadas(facturas)
   const [open, setOpen] = useState(false)
 
   return (
@@ -119,8 +119,8 @@ function Body({ detalle }: { detalle: ClienteDetalleDTO }) {
       </section>
 
       <section className="space-y-3 rounded-lg border bg-white p-6">
-        <h2 className="text-base font-semibold text-slate-900">Facturas adeudadas ({facsPendientes.length})</h2>
-        <FacturasTable facturas={facsPendientes} />
+        <h2 className="text-base font-semibold text-slate-900">Facturas adeudadas ({facsAdeudadas.length})</h2>
+        <FacturasTable facturas={facsAdeudadas} />
       </section>
 
       <section className="space-y-4 rounded-lg border bg-white p-6">

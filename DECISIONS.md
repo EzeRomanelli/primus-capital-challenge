@@ -72,9 +72,27 @@ Las decisiones más relevantes que tomé y por qué. Decisor único: yo.
 
 ---
 
-## 7. Cómo trabajé con Claude
+## 7. Convención de nombres: dominio en español, verbos técnicos en inglés
 
-Yo guié las decisiones de **arquitectura y negocio** (alcance del MVP, alma del producto, recortes, supuestos, score 2 factores, stack mínimo). Claude implementó **el código** (queries SQL, structs Go, componentes React, tests table-driven, Dockerfiles, nginx config). Ver `AI_LOG.md` para detalle de los prompts más relevantes.
+**Contexto.** Northwind es chileno, jrain también, las analistas hablan español. Pero Go y React tienen convenciones técnicas en inglés (packages, hooks con `use*`).
+
+**Decidí.** Una sola regla aplicada en 3 capas:
+
+| Capa | Idioma | Ejemplos |
+|---|---|---|
+| **Dominio del negocio** (tablas SQL, columnas, JSON keys, endpoints HTTP, enum values, UI text, nombres de entidades) | Español | `clientes`, `gestiones`, `monto_pendiente_total`, `/api/clientes/{id}/gestiones`, `corporativo`, `promesa_pago` |
+| **Tipos y DTOs** (Go structs, TS interfaces) | Español (siguen al dominio) | `Cliente`, `Factura`, `ClientePriorizadoDTO`, `CrearGestionReq` |
+| **Verbos técnicos** (packages Go, funciones, hooks, helpers) | Inglés | `Calculate`, `Suggest`, `ListClientesResumen`, `useCreateGestion`, `filterAdeudadas`, `fetchClientes`, `scoreColor` |
+
+**Por qué.** El dominio es el lenguaje del cliente — traducir `Cliente` a `Customer` rompe la conexión con la conversación real del equipo de cobranza. Los verbos en inglés son convención universal de los stacks (Go usa `Get`/`List`/`Create`; React obliga `use*` por el linter). El patrón resultante es **verb-in-english + noun-in-spanish**: `fetchClientes`, `useCreateGestion`, `filterAdeudadas`. Defendible, articulado, consistente.
+
+**Qué descarté.** "Todo en inglés" (rompe el lenguaje del negocio chileno) y "todo en español" (imposible sin antipatrones graves — React hooks requieren prefijo `use`, shadcn primitives son inmutables).
+
+---
+
+## Cómo trabajé con Claude
+
+Yo guié las decisiones de **arquitectura y negocio** (alcance del MVP, alma del producto, recortes, supuestos, score 2 factores, stack mínimo, convención de nombres). Claude implementó **el código** (queries SQL, structs Go, componentes React, tests table-driven, Dockerfiles, nginx config). Ver `AI_LOG.md` para detalle de los prompts más relevantes.
 
 ---
 

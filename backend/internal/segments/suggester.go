@@ -36,13 +36,13 @@ const (
 	enRiesgoUmbralDiasAtraso = 15
 )
 
-// Sugerir aplica las reglas en orden de prioridad y devuelve uno de los 4
+// Suggest aplica las reglas en orden de prioridad y devuelve uno de los 4
 // segmentos canonicos definidos en domain.
 //
 // Orden importante: zombi > corporativo > en_riesgo > pyme_sana.
 // Un cliente con MRR alto pero que dejo de pagar hace 100 dias sigue siendo
 // zombi, no corporativo: el dolor inmediato pesa mas que el perfil contractual.
-func Sugerir(in Input) string {
+func Suggest(in Input) string {
 	atrasoMaxDias := 0
 	for _, f := range in.FacturasPendientes {
 		diff := int(in.Hoy.Sub(f.FechaVencimiento).Hours() / 24)

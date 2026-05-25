@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { useCrearGestion } from "@/hooks/useCrearGestion"
+import { useCreateGestion } from "@/hooks/useCreateGestion"
 import { ApiError } from "@/api/client"
 import type { ResultadoGestion, TipoGestion } from "@/api/types"
 
@@ -35,7 +35,7 @@ export function GestionDialog({
   const [tipo, setTipo] = useState<TipoGestion>("llamada")
   const [resultado, setResultado] = useState<ResultadoGestion>("sin_respuesta")
   const [notas, setNotas] = useState("")
-  const mutation = useCrearGestion(clienteId)
+  const mutation = useCreateGestion(clienteId)
 
   useEffect(() => {
     if (open) {

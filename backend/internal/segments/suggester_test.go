@@ -17,7 +17,7 @@ func parseDate(s string) time.Time {
 
 // Cubrimos los 4 segmentos + un edge case importante: zombi
 // gana sobre corporativo cuando hay atraso severo (orden de las reglas).
-func TestSugerir(t *testing.T) {
+func TestSuggest(t *testing.T) {
 	hoy := parseDate("2026-05-23")
 
 	tests := []struct {
@@ -87,7 +87,7 @@ func TestSugerir(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Sugerir(tt.input)
+			got := Suggest(tt.input)
 			if got != tt.want {
 				t.Errorf("got %q, want %q", got, tt.want)
 			}

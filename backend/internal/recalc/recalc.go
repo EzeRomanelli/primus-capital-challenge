@@ -18,11 +18,11 @@ import (
 	"github.com/ezeromanelli/northwind-cobranza/backend/internal/segments"
 )
 
-// RecalcularSegmento aplica las reglas del suggester y persiste el cambio
+// RecalculateSegment aplica las reglas del suggester y persiste el cambio
 // si difiere del segmento actual.
 //
 // Idempotente: si falla, la proxima gestion lo va a re-disparar.
-func RecalcularSegmento(pool *pgxpool.Pool, clienteID string) {
+func RecalculateSegment(pool *pgxpool.Pool, clienteID string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -49,7 +49,7 @@ func RecalcularSegmento(pool *pgxpool.Pool, clienteID string) {
 		})
 	}
 
-	nuevo := segments.Sugerir(in)
+	nuevo := segments.Suggest(in)
 	if nuevo == cliente.Segmento {
 		return // sin cambio: no escribir
 	}

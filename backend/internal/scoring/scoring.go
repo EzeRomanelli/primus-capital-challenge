@@ -52,7 +52,7 @@ type Resultado struct {
 	MontoPendienteTotal float64 // suma de montos pendientes
 }
 
-// Calcular devuelve el score 0-100 de un cliente con su desglose.
+// Calculate devuelve el score 0-100 de un cliente con su desglose.
 //
 // Diseño:
 //   - Sin facturas pendientes -> Resultado{} (todo cero). Cliente al dia.
@@ -60,7 +60,7 @@ type Resultado struct {
 //     vieja debe pesar aunque las nuevas esten al dia.
 //   - impacto depende de la SUMA de montos: el riesgo agregado importa.
 //   - Ambos componentes se capean a 100 antes de combinarse.
-func Calcular(in Input) Resultado {
+func Calculate(in Input) Resultado {
 	if len(in.FacturasPendientes) == 0 {
 		return Resultado{}
 	}
